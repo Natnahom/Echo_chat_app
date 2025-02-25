@@ -3,6 +3,8 @@
 - It enables users to register, log in, and engage in real-time chat functionalities
 Using Firestore as the database, the app is structured to manage user data and chat messages efficiently.
 
+- MADE FOR A COLLAGE PROJECT
+
 ## Features
 - User Authentication: Users can register and log in with secure password storage using Firebase Authentication.
 - Real-Time Messaging: Users can send and receive messages in real-time, with features to display unread messages and chat history.
