@@ -122,7 +122,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _deleteMessage(String messageId) async {
     try {
-      await _messages.doc(messageId).delete();
+      await _messages.doc(messageId).update({
+          'lifecycleStatus': 'DELETED',
+          'editorId': widget.currentUserId,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error deleting message: $error')),
@@ -298,6 +302,24 @@ class _ChatScreenState extends State<ChatScreen> {
                       final isSender = message['senderId'] == widget.currentUserId;
                       final isEdited = message['edited'] == true;
 
+                      String status = 'ACTIVE';
+                      try{
+                        status = message['lifecycleStatus'] ?? 'ACTIVE';
+                      } catch (e) {
+                        // If lifecycleStatus is missing, default to ACTIVE
+                        status = 'ACTIVE';
+                      }
+
+                      final isDeleted = status == 'DELETED';
+
+                      final String displaySnapshotText = isDeleted 
+                        ? {
+                            'ACTIVE': message['text'],
+                            'DELETED': '🚫 MESSAGE DELETED',
+                          }[status] ?? message['text']
+                        
+                        : message['text'];
+
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                         child: Row(
@@ -329,7 +351,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      message['text'],
+                                      displaySnapshotText,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
