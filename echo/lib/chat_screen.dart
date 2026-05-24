@@ -122,7 +122,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _deleteMessage(String messageId) async {
     try {
-      await _messages.doc(messageId).delete();
+      await _messages.doc(messageId).update(
+        {
+          'text': 'This message was deleted',
+          'edited': false,
+          'deleted': true,
+        },
+      );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error deleting message: $error')),
