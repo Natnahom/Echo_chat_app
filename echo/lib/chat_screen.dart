@@ -124,9 +124,9 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       await _messages.doc(messageId).update(
         {
-          'text': 'This message was deleted',
-          'edited': false,
-          'deleted': true,
+          'lifecycleStatus': 'DELETED',
+          'editorId': widget.currentUserId,
+          'timestamp': FieldValue.serverTimestamp(),
         },
       );
     } catch (error) {
