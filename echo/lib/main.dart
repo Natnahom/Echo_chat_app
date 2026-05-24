@@ -24,7 +24,12 @@ class MyApp extends StatelessWidget {
         '/': (context) => RegisterScreen(),
         '/login': (context) => LoginScreen(),
         '/home': (context) {
-          final userId = ModalRoute.of(context)!.settings.arguments as String;
+          // 1. Cast as a nullable String to avoid crashing if empty
+          final args = ModalRoute.of(context)!.settings.arguments as String?;
+          
+          // 2. Fallback to an empty string if it's null
+          final userId = args ?? ''; 
+          
           return HomeScreen(currentUserId: userId);
         },
       },
