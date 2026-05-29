@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
@@ -24,7 +23,7 @@ Future<void> register() async {
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
 
-  // 1. Schema Validation (Data types, completeness, and character limits)
+ 
   if (username.isEmpty || email.isEmpty || password.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Schema Violation: All fields must be populated.')),
@@ -35,19 +34,6 @@ Future<void> register() async {
   if (username.length < 3 || username.length > 20) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Schema Violation: Username must be between 3 and 20 characters.')),
-    );
-    return;
-  }
-
-  // Check if the username already exists
-  QuerySnapshot usernameSnapshot = await _firestore
-      .collection('users')
-      .where('username', isEqualTo: username)
-      .get();
-
-  if (usernameSnapshot.docs.isNotEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Username already exists. Please choose another.')),
     );
     return;
   }
