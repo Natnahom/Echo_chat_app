@@ -38,6 +38,19 @@ Future<void> register() async {
     return;
   }
 
+  // Check if the username already exists
+  QuerySnapshot usernameSnapshot = await _firestore
+      .collection('users')
+      .where('username', isEqualTo: username)
+      .get();
+
+  if (usernameSnapshot.docs.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Username already exists. Please choose another.')),
+    );
+    return;
+  }
+
   try {
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: email,
