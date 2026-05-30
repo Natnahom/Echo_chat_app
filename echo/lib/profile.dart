@@ -51,66 +51,85 @@ class _ProfileState extends State<Profile> {
         future: _userData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
           if (!snapshot.hasData) {
-            return Center(child: Text('User not found'));
+            return const Center(child: Text('User not found'));
           }
 
           final userData = snapshot.data!;
           final username = userData['username'] ?? 'User';
           final email = userData['email'] ?? 'No email provided';
+          final bio = userData['bio'] ?? 'No bio set.';
+          final versionId = userData['profileVersionId'] ?? 1;
 
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    child: Text(
-                      username[0].toUpperCase(), // Display the first letter of the username
-                      style: TextStyle(fontSize: 40, color: Colors.white),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: const Color.fromARGB(255, 155, 33, 55),
+                      child: Text(
+                        username[0].toUpperCase(),
+                        style: const TextStyle(fontSize: 40, color: Colors.white),
+                      ),
                     ),
-                    backgroundColor: Color.fromARGB(255, 155, 33, 55), // Background color for the avatar
-                  ),
-                  SizedBox(height: 16),
-                  Text(username, style: TextStyle(fontSize: 24, color: Colors.white)),
-                  SizedBox(height: 8),
-                  Text(email, style: TextStyle(fontSize: 16, color: Colors.grey)),
-                  SizedBox(height: 24),
-                  TextButton(
-                    onPressed: _editProfile,
-                    child: Text('Edit Profile', style: TextStyle(color: Colors.black,)),
-                    style: ButtonStyle(
-                      minimumSize: MaterialStateProperty.all(Size(70, 50)),
-                      backgroundColor: MaterialStateProperty.all(Colors.white),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
+                    const SizedBox(height: 16),
+                    Text(username, style: const TextStyle(fontSize: 24, color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Profile Baseline v$versionId',
+                      style: const TextStyle(fontSize: 12, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                    const SizedBox(height: 12),
+                    Text(
+                      bio,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: _editProfile,
+                      child: const Text('Edit Profile', style: TextStyle(color: Colors.black)),
+                      style: ButtonStyle(
+                        minimumSize: MaterialStateProperty.all(const Size(70, 50)),
+                        backgroundColor: MaterialStateProperty.all(Colors.white),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  TextButton(
-                    onPressed: _logout,
-                    child: Text('Logout', style: TextStyle(color: Colors.black,)),
-                    style: ButtonStyle(
-                      minimumSize: MaterialStateProperty.all(Size(70, 50)),
-                      backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 254, 17, 0)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _logout,
+                      child: const Text('Logout', style: TextStyle(color: Colors.black)),
+                      style: ButtonStyle(
+                        minimumSize: MaterialStateProperty.all(const Size(70, 50)),
+                        backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 254, 17, 0)),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
