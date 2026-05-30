@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -16,54 +17,70 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscureText = true; // State for password visibility
 
-  Future<void> register() async {
-    // Check for empty fields
-    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields.')),
-      );
-      return; // Exit early if fields are empty
-    }
 
-    // Check if the username already exists
-    QuerySnapshot usernameSnapshot = await _firestore
-        .collection('users')
-        .where('username', isEqualTo: _usernameController.text.trim())
-        .get();
+Future<void> register() async {
+  final username = _usernameController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
-    if (usernameSnapshot.docs.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Username already exists. Please choose another.')),
-      );
-      return; // Exit early if username exists
-    }
-
-    try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      // Save username in Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'username': _usernameController.text.trim(),
-        'email': _emailController.text.trim(),
-      });
-
-      // Navigate to login
-      Navigator.of(context).pushReplacementNamed('/login');
-    } on FirebaseAuthException catch (authException) {
-      print("FirebaseAuth error: ${authException.message}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Auth error: ${authException.message}')),
-      );
-    } catch (e) {
-      print("General error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: ${e.toString()}')),
-      );
-    }
+ 
+  if (username.isEmpty || email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Schema Violation: All fields must be populated.')),
+    );
+    return;
   }
+
+  if (username.length < 3 || username.length > 20) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Schema Violation: Username must be between 3 and 20 characters.')),
+    );
+    return;
+  }
+
+  // Check if the username already exists
+  QuerySnapshot usernameSnapshot = await _firestore
+      .collection('users')
+      .where('username', isEqualTo: username)
+      .get();
+
+  if (usernameSnapshot.docs.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Username already exists. Please choose another.')),
+    );
+    return;
+  }
+
+  try {
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // 2. Generate initial Configuration State Hash for Baseline tracking
+    final String baselineString = "username:$username|email:$email|bio:|version:1";
+    final String initialHash = sha256.convert(utf8.encode(baselineString)).toString();
+
+    // 3. Save initial versioned Profile Document to Firestore
+    await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      'username': username,
+      'email': email,
+      'bio': '', // Added Bio field to match modified FR-3.3 requirement
+      'profileVersionId': 1, // Start of identity baseline tracking
+      'archivedHashes': [initialHash], // SCM Traceability array
+    });
+
+    Navigator.of(context).pushReplacementNamed('/login');
+  } on FirebaseAuthException catch (authException) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Auth error: ${authException.message}')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Registration failed: ${e.toString()}')),
+    );
+  }
+}
 
   void _togglePasswordVisibility() {
     setState(() {
